@@ -68,7 +68,15 @@ namespace StreamReadWrite
       }
    }
 }
-```  
+```   
+   
+- - -   
+   
+### 소멸자 (Destructor)   
+  
+객체가 메모리에서 제거될때마다 실행됨.   
+가비지 컬렉터가 객체의 소멸을 관리하기 때문에 언제 실행될지 예측할 수 없으며,  
+명시적으로 소멸자를 선언하지 않아도 컴파일러가 암시적으로 기본 소멸자를 생성.  
 
 
    
@@ -77,5 +85,5 @@ namespace StreamReadWrite
    
 [참조(MicroSoft_FileStream)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.filestream?view=netframework-4.7.2)   
 [참조(MicroSfot_StreamWriter)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.streamwriter?view=netframework-4.7.2)  
-   
+[참조(C#생성자,소멸자)](https://076923.github.io/posts/C-15/)   
     
