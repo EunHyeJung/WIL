@@ -77,13 +77,54 @@ namespace StreamReadWrite
 객체가 메모리에서 제거될때마다 실행됨.   
 가비지 컬렉터가 객체의 소멸을 관리하기 때문에 언제 실행될지 예측할 수 없으며,  
 명시적으로 소멸자를 선언하지 않아도 컴파일러가 암시적으로 기본 소멸자를 생성.  
-
-
+    
+- - -  
    
+### 병렬 프로그래밍  (Parallel Programming)   
+     
+병렬처리는 큰 일거리를 분할하는 단계, 분할된 작업들을 병렬 처리하는 단계, 그리고 결과를 집계하는 단계로 진행됨.  
+일거리를 분할하는 방식은 크게 Data Parallelism과 Task Parallelism으로 나뉨.  
+   
+* <b>Data Parallelism</b>  
+  대량의 데이터를 분할해서, 다중 CPU를 사용하여 동시에 데이터를 처리.   
+  다중CPU를 사용하여 다중 쓰레드들이 각각 할당된 데이터를 처리하는데, 일반적으로 쓰레드당 처리 내용은 동일.  
+   
+* <b>Task Parallelism</b>  
+  각 쓰레드들이 나눠서 다른 작업 TAsk들을 실행하는 것.  
+   
+많은 양의 데이터를 처리할 떄, 다른 스레드들이 변경되는값에 대해서 영향을 주지 않는다면, 병렬처리를 하면 처리 시간을 단축할 수 있다.  
+다중스레드로 병렬처리하는 경우, 작업들이 인덱스 순서대로 진행되지는 않는다.  
+   
+    
+#### Parallel 클래스    
+    
+Parallel 클래스는 Paralle.For(), Parallel.ForEach() 메서드를 통해 다중 CPU에서 다중 스레드가 병렬 데이터를 분할하여 처리하는 기능 제공.     
+      
+<b>Parallel 사용 예제</b>   
+```
+using System;
+using System.Treading;
+using SYstem.Treading.Tasks;
+
+// 순차 처리 (단일스레드)
+for (int i = 1; i <=100; i ++)
+{
+   Console.WriteLine("{0} : {1}", Thread.CurrentThread.ManagedTreadId, i);
+}
+
+// 병렬 처리
+Parallel.For(1, 100, (i) => {
+   Console.WriteLine("{0} : {1}", Thread.CurrentThread.ManagedTreadId, i);
+});
+```   
+   
+     
    
 - - -  
    
 [참조(MicroSoft_FileStream)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.filestream?view=netframework-4.7.2)   
 [참조(MicroSfot_StreamWriter)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.streamwriter?view=netframework-4.7.2)  
 [참조(C#생성자,소멸자)](https://076923.github.io/posts/C-15/)   
+[참조(Microsoft_데이터병렬처리)](https://docs.microsoft.com/ko-kr/dotnet/standard/parallel-programming/data-parallelism-task-parallel-library)  
+[참조(C#스터디_병렬프로그래밍)](http://www.csharpstudy.com/Threads/parallel.aspx) 
     
