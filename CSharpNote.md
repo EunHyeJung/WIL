@@ -116,8 +116,21 @@ for (int i = 1; i <=100; i ++)
 Parallel.For(1, 100, (i) => {
    Console.WriteLine("{0} : {1}", Thread.CurrentThread.ManagedTreadId, i);
 });
-```   
+```    
    
+- - -  
+   
+## 용량 큰 텍스트 파일 멀티스레드로 읽기  
+  
+```  
+// Method signarture : Parallel.ForEach(IEnumerable<TSource> source, Action<TSrouce> body)
+Parallel.ForEach(File.ReadLines("파일경로"), (line, _, lineNumber) =>
+{
+   // code
+});
+```  
+  
+cf) `File.ReadLines`는 라인별로 문자열을 하나씩 리턴하는 Inumerable<string> 객체를 리턴함.  
      
    
 - - -  
@@ -127,4 +140,4 @@ Parallel.For(1, 100, (i) => {
 [참조(C#생성자,소멸자)](https://076923.github.io/posts/C-15/)   
 [참조(Microsoft_데이터병렬처리)](https://docs.microsoft.com/ko-kr/dotnet/standard/parallel-programming/data-parallelism-task-parallel-library)  
 [참조(C#스터디_병렬프로그래밍)](http://www.csharpstudy.com/Threads/parallel.aspx) 
-    
+[참조(StackOverFlow_ReadLargeTxtFile)](https://stackoverflow.com/questions/17188357/read-large-txt-file-multithreaded)
