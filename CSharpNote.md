@@ -134,10 +134,19 @@ cf) `File.ReadLines`는 라인별로 문자열을 하나씩 리턴하는 Inumera
      
    
 - - -  
-   
+    
+### decimal 및 numeric
+  
+전체 자리수와 소수 자리수가 고정된 숫자 데이터 형식  
+decimal과 numeric은 동의어   
+
+    
+- - -  
+    
 [참조(MicroSoft_FileStream)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.filestream?view=netframework-4.7.2)   
 [참조(MicroSfot_StreamWriter)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.streamwriter?view=netframework-4.7.2)  
 [참조(C#생성자,소멸자)](https://076923.github.io/posts/C-15/)   
 [참조(Microsoft_데이터병렬처리)](https://docs.microsoft.com/ko-kr/dotnet/standard/parallel-programming/data-parallelism-task-parallel-library)  
 [참조(C#스터디_병렬프로그래밍)](http://www.csharpstudy.com/Threads/parallel.aspx) 
 [참조(StackOverFlow_ReadLargeTxtFile)](https://stackoverflow.com/questions/17188357/read-large-txt-file-multithreaded)
+[참조(MicroSoft_Decimal)](https://docs.microsoft.com/ko-kr/sql/t-sql/data-types/decimal-and-numeric-transact-sql?view=sql-server-2017)
