@@ -141,39 +141,15 @@ cf) `File.ReadLines`는 라인별로 문자열을 하나씩 리턴하는 Inumera
 decimal과 numeric은 동의어   
 
     
-- - -  
-    
-### MERGE문  
-  
-MERGE문 사용시 조건에 따라 INSERT, UPDATE, DELETE 등을 한 문장으로 간단히 실행가능.   
-MERGE문은 먼저 TARGET과 SOURCE를 지정. 
-TARGET : DML을 실제 수행하는 대상  
-SOURCE : TARGET과 비교하여 새로 추가하거나 갱신할 데이터를 가진 테이블   
-       
-```sql  
-MERGE Customer AS c
-USING (SELECT Name, Email From CustUpdQueue) AS cq
-ON c.Name = cq.Name
-WHEN MATCHED THEN
-     UPDATE SET c.Email = cq.Email
-WHEN NOT MATCHED THEN
-     INSERT (Name, Email) VALUES(cq.Name, cq.Email);
-```   
-    
-MERGE문 다음에 TARGET이 되는 테이블을 지정하고,  
-USING 다음에 소스 지정.
-소스는 테이블이나 임시테이블, 리터럴값, 변수가 될 수 있음.     
-ON 키워드 다음에는 타겟과 소스가 매치되는 조건식 지정.  
-위의 예의 경우 이름이 매치되는 경우 Email을 업데이트 하고, 이름이 없는 경우 새 레코드를 INSERT 함.  
-      
-- - -  
-    
+ 
+   
+     
+     
+- - -   
+     
 [참조(MicroSoft_FileStream)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.filestream?view=netframework-4.7.2)   
 [참조(MicroSfot_StreamWriter)](https://docs.microsoft.com/ko-kr/dotnet/api/system.io.streamwriter?view=netframework-4.7.2)  
 [참조(C#생성자,소멸자)](https://076923.github.io/posts/C-15/)   
 [참조(Microsoft_데이터병렬처리)](https://docs.microsoft.com/ko-kr/dotnet/standard/parallel-programming/data-parallelism-task-parallel-library)  
 [참조(C#스터디_병렬프로그래밍)](http://www.csharpstudy.com/Threads/parallel.aspx) 
 [참조(StackOverFlow_ReadLargeTxtFile)](https://stackoverflow.com/questions/17188357/read-large-txt-file-multithreaded)
-[참조(MicroSoft_Decimal)](https://docs.microsoft.com/ko-kr/sql/t-sql/data-types/decimal-and-numeric-transact-sql?view=sql-server-2017)
-[참조(C#스터디 MERGE문)](http://www.sqlprogram.com/TIPS/tip-merge.aspx)    
-  
