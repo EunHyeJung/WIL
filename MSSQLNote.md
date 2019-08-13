@@ -53,7 +53,31 @@ ex) 특정 데이터가 빈값인지, 아닌지 확인하는 경우
 `NULLIF(data, '') IS NULL `   
    
       
-
+- - -     
+    
+### PK (Primary Key) 확인   
+   
+```sql   
+select *
+from INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+where TABLE_NAME = '테이블명'
+```     
+    
+    
+### PK (Primary Key) 삭제   
+    
+```sql   
+ALTER TABLE 테이블명
+DROP CONSTRAINT 기존_PK명
+```   
+  
+      
+### PK (Primary Key) 변경   
+    
+```  
+ALTER TABLE 소유자명.테이블명
+ADD CONSTRAINT PK명 PRIMARY KEY(컬럼명1, 컬럼명2)
+```   
        
 - - -  
    
