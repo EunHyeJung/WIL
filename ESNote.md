@@ -180,5 +180,64 @@ POST my_index/_analyze
    
   
        
+- - -   
+    
+  
+## Create a custom analyzer   
+   
+빌트인 분석기로 요구사항 충족이 안되면, 문자 필터(character filter), 토크나이저(tokenizer), 토큰 필터(token filteR)를 조합하여 커스텀 분석기를 만들 수 있다.  
+    
      
+### Configuration       
+ 
+커스텀 분석기는 다음 파라미터를 받아들인다.   
+  
+**tokenizer** : 빌트인 혹은 커스텀 토크나이저 (필수값)   
+**char_filter** : 빌트인 혹은 커스텀 문자필터 (선택값)   
+**filter** : 빌트인 혹은 커스텀 토큰 필터 (선택값)   
+**position_increment_gap** : 텍스트 배열을 인덱싱할떄, 엘라스틱서치는 한 값의 마지막 term과 다음 값의 첫번째 term 사이에 가짜 "갭"을 삽입한다.  
+                             디폴트값은 100   
+      
+      
+### Exmaple Configuration   
+   
+[Custom Conifguration 예제](https://www.elastic.co/guide/en/elasticsearch/reference/7.5/analysis-custom-analyzer.html)  
+    
+    
+- - -   
+   
+   
+## Built-in analyzer reference   
+      
+   
+* Standard Analyzer  
+  유니코드 텍스트 분할 알고리즘 (Unicode Text Segmentation)으로 정의된대로 텍스트를 term으로 분리.  
+  대부분 구두점, 소문자 term, 불용어 제거 지원  
+     
+* Simple Analyzer  
+  문자가 아닌 글자가 나오면 텍스트를 term으로 분리, 모든 term 소문자로 변환   
+    
+* Whitespace Analyzer   
+  공백문자를 만날떄마다 텍스트를 term으로 분리, term들을 소문자로 변환하지 않음   
+   
+* Stop Analyzr   
+  심플분석기와 비슷하지만 불용어 제거 지원    
+     
+* Keyword Analyzer   
+  keyword analyzer is a “noop” analyzer that accepts whatever text it is given and outputs the exact same text as a single term.   
+     
+* Pattern Analyzer   
+  패턴 분석기는 텍스트를 term으로 나눌떄 정규표현식 사용, 소문자 변환과 불용어 제거 지원.  
+  
+* Language Analyzers  
+  엘라스틱서치는 영어와 프랑스어 같은 많은 언어분석기 지원   
+     
+* Fingerprint Analyzer  
+  
+ 
+     
+
+
+
+
 
