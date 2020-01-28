@@ -5,7 +5,7 @@
 ## Text Analysis  
   
 검색할 때 사용되는 역색인(inverted index)에는 token 또는 term들이 담겨져 있음.  
-텍스트 분석은 텍스트(texT)를 token 또는 term으로 변환하는 과정임.   
+텍스트 분석은 텍스트(text)를 token 또는 term으로 변환하는 과정임.   
 분석은 분석기로 수행되는데, 분석기는 내장도니 분석기를 쓸 수 도 있고, 색인마다 정의되는 커스텀 분석기를 사용할 수도 있음.  
   
     
@@ -220,7 +220,7 @@ POST my_index/_analyze
 * Whitespace Analyzer   
   공백문자를 만날떄마다 텍스트를 term으로 분리, term들을 소문자로 변환하지 않음   
    
-* Stop Analyzr   
+* Stop Analyzer   
   심플분석기와 비슷하지만 불용어 제거 지원    
      
 * Keyword Analyzer   
@@ -234,6 +234,30 @@ POST my_index/_analyze
      
 * Fingerprint Analyzer  
   
+  
+- - -   
+   
+   
+## Mapping   
+   
+NEST를 이용하여 엘라스틱서치와 상호작용하기 위해서, POCO 타입과 엘라스틱 역색인에 저장된 JSON 도큐먼트와 필드들간 매핑을 컨트롤 할 수 있어야 한다.   
+엘라스틱서치에서 명시적으로 도큐먼트들을 매핑하는것은 매우 중요한 부분이다. 
+엘라스틱 서치가 첫번째 주어진 도큐먼트에 근거하여 색인에서 주어진 타입을 유추하여 매핑을 할 수도 있지만, 추론된 매핑은 때때로 검색할 때 완벽한 결과를 제공하지 못할 수도 있다.  
+명시적으로 매핑을 제어하기 위해, 색인을 만들 때 명시적 타입 매핑을 명시하거나, 첫번째 문서가 색인되기 전에 기존 색인에 더할 수 있다.  
+(명시적 매핑 없이 문서를 색인하게 되면, 엘라스틱 서치는 매핑을 유추하게 된다!)  
+  
+NEST에는 매핑 컨트롤 하는 다음의 몇가지 방법이 있다.  
+  
+* Auto mapping (inferred from POCO property types)  
+* Attribute mapping  
+* Fluent mapping  
+* through the Visitor Pattern  
+* Parent/Child Relationship  
+        
+   
+### Auto mapping   
+   
+색인을 생성하거나 PUT Mapping API를 사용하여 매핑을 만들 때, NEST는 매핑하는 CLR POCO 속성 유형에서 올바른 엘라스틱서치 필드 데이터 유형을 자동으로 유추 할 수있는 자동 매핑 기능을 제공한다.    
  
      
 
