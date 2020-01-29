@@ -258,7 +258,142 @@ NEST에는 매핑 컨트롤 하는 다음의 몇가지 방법이 있다.
 ### Auto mapping   
    
 색인을 생성하거나 PUT Mapping API를 사용하여 매핑을 만들 때, NEST는 매핑하는 CLR POCO 속성 유형에서 올바른 엘라스틱서치 필드 데이터 유형을 자동으로 유추 할 수있는 자동 매핑 기능을 제공한다.    
- 
+    
+예를 들어, 다음과 같이 직원들 정보를 담고 있는 `Company`와 `Employee` 두 개의 POCO가 있다고 보자.   
+   
+```  
+public abstract class Document
+{
+   public JoinField Join { get; set; }
+}
+
+public class Company : Document
+{
+   public string Name { get; set; }
+   public List<Employee> Employees { get; set; }
+}
+
+public class Employee : Document
+{
+    public string LastName { get; set; }
+    public int Salary { get; set; }
+    public DateTime Birthday { get; set; }
+    public bool IsManager { get; set; }
+    public List<Employee> Employees { get; set; }
+    public TimeSpan Hours { get; set; }   
+}
+```  
+  
+자동 매핑(Auto mapping)은 POCO에 대한 모든 속성에 수동매핑을 정의하지 않도록 해준다.  
+이 케이스에서 우리는 한 인덱스에 2개의 서브 클래서들을 색인하려고 한다.  
+기본 클래스에 대해 Map을 호출한 다음, 구현하려는 각 유형애 대하여 AutoMap을 호출하면 된다.  
+    
+```  
+var createIndexResponse = _client.Indices.Create("myindex", c => c
+         .Map<Document>(m => m
+               .AutoMap<Company> () //1
+               .AutoMap(typeof(Employee)) //2
+       )
+);
+```  
+  
+1. generic 메소드를 이용하여 Company를 자동매핑한다.  
+2. non-generic 메소드를 이용하여 Employee를 자동매핑한다.  
+  
+이 작업은 다음의 JSON request를 만들어낼 것이다.  
+   
+``` 
+{
+  "mappings": {
+    "properties": {
+      "birthday": {
+        "type": "date"
+      },
+      "employees": {
+        "properties": {
+          "birthday": {
+            "type": "date"
+          },
+          "employees": {
+            "properties": {},
+            "type": "object"
+          },
+          "hours": {
+            "type": "long"
+          },
+          "isManager": {
+            "type": "boolean"
+          },
+          "join": {
+            "properties": {},
+            "type": "object"
+          },
+          "lastName": {
+            "fields": {
+              "keyword": {
+                "ignore_above": 256,
+                "type": "keyword"
+              }
+            },
+            "type": "text"
+          },
+          "salary": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "hours": {
+        "type": "long"
+      },
+      "isManager": {
+        "type": "boolean"
+      },
+      "join": {
+        "properties": {},
+        "type": "object"
+      },
+      "lastName": {
+        "fields": {
+          "keyword": {
+            "ignore_above": 256,
+            "type": "keyword"
+          }
+        },
+        "type": "text"
+      },
+      "name": {
+        "fields": {
+          "keyword": {
+            "ignore_above": 256,
+            "type": "keyword"
+          }
+        },
+        "type": "text"
+      },
+      "salary": {
+        "type": "integer"
+      }
+    }
+  }
+}
+```  
+  
+NEST가 우리가 만든 POCO 프로퍼티의 CLR 타입에 근거해서, 엘라스틱 서치 타입을 추론한다는 것을 주목해야 한다.  
+예를 들어,  
+* Birthday는 date타입으로 매핑된다.
+* Hours는 long 타입으로 매핑된다.  
+* IsManager는 boolean으로 매핑된다.  
+* Salary는 integer로 매핑된다.  
+* Employees는 object로 매핑된다.  
+ 그리고 나머지 문자열 속성은 각각 키워드 데이터 유형 하위필드가 있는 다중 필드 텍스트 타입이 된다.  
+     
+[Inferred .NET type mapping](https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/auto-map.html)   
+   
+
+   
+  
+  
      
 
 
