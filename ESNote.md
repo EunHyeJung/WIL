@@ -389,14 +389,143 @@ NEST가 우리가 만든 POCO 프로퍼티의 CLR 타입에 근거해서, 엘라
  그리고 나머지 문자열 속성은 각각 키워드 데이터 유형 하위필드가 있는 다중 필드 텍스트 타입이 된다.  
      
 [Inferred .NET type mapping](https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/auto-map.html)   
+    
    
-
+- - -   
    
-  
-  
+[NEST - High level client](https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/writing-queries.html)   
+   
      
+### Search - Combining queries  
+    
+```  
+var searchResult = _client.Search<Project>(s => s
+      .Query(q => q
+            .Bool(b => b
+                  .Must(mu => mu
+                       .Match(m => m   // 1
+                           .Field(f => f.Student.FirstName)
+                           .Query("Hailey")  
+                      ), mu -> mu
+                      .Match(m => m    // 2
+                           .Field(f => f.Student.LastName)
+                           .Query("Jung")
+                      )
+                 )
+                 .Filter(fi => fi
+                     .DateRange(r => r
+                           .Field(f => f.StartedOn)
+                           .GreaterThanEquals(new DateTime(2019, 01, 01))
+                           .LessThan(new DateTime(2020, 01, 01))     // 3
+                        )
+                   )
+               )
+         )
+);                                       
+```   
+   
+1. 학생(Student)의 이름(First Name)에 "Hailey"가 포함되어 있는 도큐먼트를 찾는다.    
+2. 그리고(and) 학생의 성에 "Jung"이 포함된 도큐먼트를 찾는다.  
+3. 기간 검색 조건   
+   
+검색 쿼리 결과로 나온 도큐먼트는 3쿼리를 모두 충족해야한다.    
+위코드는 다음의JSON 쿼리를 생성한다.   
+       
+```  
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "leadDeveloper.firstName": {
+              "query": "Russ"
+            }
+          }
+        },
+        {
+          "match": {
+            "leadDeveloper.lastName": {
+              "query": "Cam"
+            }
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "startedOn": {
+              "lt": "2020-01-01T00:00:00",
+              "gte": "2019-01-01T00:00:00"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```   
+   
+bool 쿼리는 매우 일반적이기 때문에, NEST는 연산자를 쿼리에 오버로드 해서 bool 쿼리를 훨씬 간결하게 만든다.  
+다음과 같이 쿼리를 훨씬 간결하게 만들 수 있다.  
+    
+```   
+searchResposne = _client.Search<Projects>(s => s
+      .Query(q => q
+         .Match(m => m
+               .Field(f => f.Student.FirstName)
+               .Query("Hailey")
+         ) && q      // 1
+         .Match(m => m
+               .Field(f => f.Student.LastName)
+               .Query("Jung")
+         ) && +q  // 2
+         .DateRange(r => r
+               .Field(f => f.StartedOn)
+               .GreaterThanOrEquals(new DateTime(2020, 01, 01))
+               .LessThan(new DateTime(2019, 01, 01))
+         )
+      )
+);
+```  
+   
+1. && 연산자 사용하여 쿼리들을 결합   
+2. + 연산자 사용해서 bool 쿼리 필터절에 쿼리를 래핑하고, && 연산자 사용하여 결합   
+       
+      
+### Search Response    
+    
+검색 쿼리로부터  `SearchResposne<T>`을 반환받는다.  
+`T`는 검색 메소드 호출에서 정의된 제너릭 파라미터 타입이다.   
+응답에는 별로 많은 속성(properties)이 있지는 않지만, 주로 많이 사용하는 속성은 `.Document`이다.  
+    
+    
+### Matching Document   
+   
+검색쿼리에서 받은 응답값에서 도큐먼트는 다음과 같이 얻을 수 있다.   
+   
+```   
+var searchResponse = client.Search<Project>(s => s
+      .Query(q => q
+            .MatchAll()
+      )
+);
 
-
-
-
-
+var projects = searchResponse.Documents;
+```   
+     
+`.Document` 는 각 히트마다 `_source`를 얻기 위한 편리한 속기이다.   
+   
+```  
+var srouces = searchResposne.HitsMetadata.Hits.Select(h => h.Source);  
+```  
+   
+검색어에 하이라이팅하는 방법도 있음.  
+   
+```  
+var highlights = searchResponse.HitsMetadata.Hits.Select(h => h
+      .Highlight
+);
+```   
+    
+     
