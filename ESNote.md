@@ -527,5 +527,12 @@ var highlights = searchResponse.HitsMetadata.Hits.Select(h => h
       .Highlight
 );
 ```   
-    
-     
+      
+       
+- --   
+   
+### ETC    
+  
+* 엘라스틱서치는 실제로 저장된 Document의 원문을 검색하는것이 아니라 `inverted index`에서 `term(token)`중에 쿼리에서 질의한 검색 키워드를 찾는다.  
+   
+   
