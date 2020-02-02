@@ -1,12 +1,130 @@
 `Elastic Search 학습 내용 정리`   
    
+[참조 : ElasticSearch Reference(Mapping)](https://www.elastic.co/guide/en/elasticsearch/reference/7.5/mapping.html#mapping-type)    
+
+## Mapping   
+    
+맵핑은 엘라스틱 서치에서 사용될 필드의 타입(자료형)을 사전에 정의해주는것으로 보면 된다.  
+관계형 데이터베이스의 스키마와 유사한 의미이고, 사전에 매핑에 대한 정의가 없다면 색인되는 데이터에 따라 필드 데이터 타입에 대한 매핑정보가 자동으로 설정된다.  
+한번 매핑 타입이 정의되면 이후엔 수정이 될 수 없기떄문에 사전에 적절한 매핑 타입을 정의하는 것이 좋다.  
+   
+매핑을 사용하면 다음을 정의할 수 있다.  
+    
+* 전문 필드(full text field)로 취급되어야 하는 문자열 필드들  
+* 숫자, 날짜, 지리적 위치를 포함하는 필드들  
+* 날짜 값 포맷  
+* 동적으로 추가된 필드 매핑을 컨트롤 하는 커스텀 규칙들  
+   
+   
+### Mapping Type   
+   
+각 색인은 하나의 매핑 타입을 가진다.  
+  
+한매핑 타입은 **Meta-fields**와 **Fields** 혹은 properties를 가진다.    
+  
+* Meta-fields  
+  메타 필드는 문서의 메타데이터가 처리되는 방식을 정의하는데 사용된다.  
+  메타필드의 예로는 `_index`, `_type`, `_id` 및 `_source` 필드가 있다.  
+* Fields or properties  
+  한 매핑 타입은 필드 혹은 문서에 관련된 적절한 프로퍼티(properties)의 목록을 포함한다.   
+       
+        
+### Field datatypes  
+  
+각 필드에는 다음과 같은 데이터 타입이 있다.  
+   
+* test, keyword, date, long, double, boolean 또는 ip와 같은 간단한 타입  
+* 객체 또는 중첩과 같은 JSON의 계층적 특성을 지원하는 타입  
+* geo_point, geo_shape 또는 completion과 같은 전문화된 타입   
+      
+같은 필드를 다른 목적으로, 다른 방식으로 색인하는것은 종종 유용하다.  
+예를 들어 문자열 필드는 전문 검색을 위한 텍스트 필드와 정렬 또는 집계하기 위한 키워드 필드로 색인될 수 있다.  
+또는 문자열 필드를 표준 분석기, 영어 분석기, 프랑스 분석기로 색인할수도 있다.  
+이것이 바로 다중 필드(Multi-field)의 목적이다.      
+대부분 데이터 타입은 fields 매개변수를 통해 다중 필드를 지원한다.  
+     
+       
+### Dynamic mapping    
+  
+필드와 매핑 타입은 사전에 정의될 필요는 없다.  
+dynamic mapping 덕분에 새로운 필드이름들은 도큐먼트를 색인하면서 자동적으로 덧붙여질 수 있다.  
+최상위(top-level) 필드 매핑 타입과 내부 개체 및 중첩 필드에 새 필드를 추가하는 것은 가능하다.  
+   
+   
+### Create an index with an explicit mapping   
+   
+정확한 매핑 타입을 가진 새로운 색인을 만들때 `create index` API를 사용하면 된다.  
+   
+```   
+PUT /my-idnex
+{
+      "mappings" : {
+           "properties" : {
+               "age" : { "type" : "integer" },  // 정수 필드 age 생성  
+               "email" : { "type" : "keyword" }, // 키워드 필드 email 생성  
+               "name" : { "type" : "text" } // 텍스트 필드 name 생성  
+           }           
+      }
+}
+```   
+  
+### Add a field to an existing mapping  
+    
+새로운 필드를 기존 색인에 덧붙이기 위해서는 `put mapping` API를 사용하면 된다.  
+다음 예는 키워드 필드 employee-id를 index 매핑 파라미터 값 false로 기존 색인에 추가하는 예제이다.  
+이것은 employee-id 필드가 저장되지만 색인되거나 검색이 가능하지 않다는 것을 의미한다.   
+   
+```  
+PUT /my-index/_mapping
+{
+   "properties" : {
+         "employee-id" : {
+               "type" : "keyword",
+               "index" : false  
+         }
+   }
+}
+```  
+    
+#### Update the mapping of filed   
+  
+지원되는 매핑매개변수를 제외하고, 기존필드의 매핑 또는 필드 타입을 변경할 수 없다.  
+기존 필드를 변경하면, 색인된 데이터가 무효화될 수도 있다.  
+만약 필드 매핑을 변경하기 원하면, 올바른 매핑으로 새로운 색인을 생성하고 데이터를 재색인해야 한다.  
+필드명을 변경하면 이전 필드명으로 이미 색인된 데이터 이용이 불가능해질 수 있다.  
+대신 alias 필드를 추가해서 대체 필드명을 생성해야 한다.  
+    
+    
+### View the mapping of an index  
+   
+기존 색인의 매핑 정보를 보려면 `get mapping` API를 사용하면 된다.  
+    
+```  
+GET /my-index/mapping   
+```   
+   
+### View the mapping of specific fields  
+  
+특정필드의매핑 정보를 확인하고 싶으면 `get field mapping` API를 사용하면 된다.  
+이건 필드수가 매우 많을떄 사용하면 유용함  
+  
+다음 요청은 employee-id 필드의 매핑 정보를 알려준다.  
+  
+```  
+GET /my-index/_mapping/field/employee-id
+```  
+    
+  
+- - -  
+   
 [참조 : ElasticSearch Reference](https://www.elastic.co/guide/en/elasticsearch/reference/7.5/analysis.html)    
   
+   
 ## Text Analysis  
   
 검색할 때 사용되는 역색인(inverted index)에는 token 또는 term들이 담겨져 있음.  
 텍스트 분석은 텍스트(text)를 token 또는 term으로 변환하는 과정임.   
-분석은 분석기로 수행되는데, 분석기는 내장도니 분석기를 쓸 수 도 있고, 색인마다 정의되는 커스텀 분석기를 사용할 수도 있음.  
+분석은 분석기로 수행되는데, 분석기는 내장(built-in) 분석기를 쓸 수 도 있고, 색인마다 정의되는 커스텀 분석기를 사용할 수도 있음.  
   
     
 ### Index time analysis   
