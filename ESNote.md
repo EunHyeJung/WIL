@@ -112,8 +112,87 @@ GET /my-index/mapping
   
 ```  
 GET /my-index/_mapping/field/employee-id
-```  
+``` 
+   
+   
+- - -  
+   
+[참조 : ElasticSearch Reference(Removal of mapping types)](https://www.elastic.co/guide/en/elasticsearch/reference/7.5/removal-of-types.html)    
+   
+   
+## Removal of mapping types  
+   
+   
+
+엘라스틱 7.0.0 이후로 생성된 색인들은 더이상 `_defulat` 매핑을 허용하지 않는다.  
+6.x 버전에 생성된 색인들은 엘라스틱 6.x에 기능하던 동작대로 동작될 것이다.  
+Types은 7.0에 있는 API들에서 더이상 사용될 수 없다. (deprecated)  
+이에 따라 관련된 API들에 변경된 부분이 생겼다.  
+(index creation, put mapping, get mapping, put template, get template, get field mapping)   
+   
+   
+### What are mapping types ?  
+  
+처음 엘라스틱 서치가 릴리즈된 이후로, 각 도큐먼트는 하나의 색인에 저장되고 하나의 매핑 타입을 할당받았다.  
+각 매핑 타입은 자체 필드들을 가질 수 있다.  
+그래서 user 타입은 full_name 필드, uase_name 필드 그리고 email 필드를 가질 수 있고,  
+tweet 타입은 content 필드, tweeted_at 필드들을 가질 수 있다.  
+  
+각도큐먼트는 `_type` 메타 필드를 가지고 있으며, `_type` 메타필드는 타입 이름을 포함한다.  
+그리고 검색들은 URL에서 타입명을 명시함으로써 하나 또는 하나 이상의 타입으로 제한할 수 있다.  
+   
+```
+Get twitter/use,tweet/_search
+{
+   "query" : {
+      "match" : {
+         "use_name" : "kimchy"
+      }
+   }
+}
+```   
+   
+`_type` 필드는 도뮤먼트의 `_uid`필드를 생성하기 위해 `_id`와 결합된다.  
+그래서 같은 `_id`를 가지는 다른 타입의 도큐먼트들은 단일 인덱스에서 존재할 수 있다.  
+매핑 타입은 또한 도큐먼트들 사이에서 parent-child 관계를 만들기 위해 사용된다.  
+그래서 `question` 타입의 도뮤먼트는 `answer`타입의 도큐먼트의 부모가 될 수 있다.  
+  
+      
+### Why are mapping types being removed ?  
+   
+첬째로, 우리는 "index"가 SQL의 "database"와 유사하다고 말한다.  
+그리고 "type"은 "table"과 유사하다고 말한다.  
+
+이것은 잘못된 가정을 만든다. SQL 데이터베이스에서 테이블은 서로 독립적이다.  
+한 테이블에서 컬럼들은 다른 테이블의 컬럼들과 관련이 없다.  
+하지만 이러한 내용이 매핑 타입의 필드들에 대해서는 다르게 적용된다.  
+엘라스틱 서치 인덱스에서, 다른 매핑 타입에 있는 같은 이름을 가지는 필드들은 내부적으로 같은 루신 필드로 지원된다.  
+즉, 위의 예에서 `user` 타입에서 `use_name` 필드는 `tweet` 타입에서 `user_name` 필드와 동일한 필드로 저장된다.  
+그리고 두 `use_name`필드는 두 타입 모두에서 동일한 매핑을 가져야만 한다.   
     
+이것은 혼란을 만들 수 있다.   
+This can lead to frustration when, for example, you want deleted to be a date field in one type and a boolean field in another type in the same index.    
+  
+On top of that, storing different entities that have few or no fields in common in the same index leads to sparse data and interferes with Lucene’s ability to compress documents efficiently.  
+(이해가 잘안됨..ㅠㅠ)  
+   
+
+### Alternatives to mapping types   
+    
+#### Index per document type   
+  
+첫번째 대안은 도큐먼트 타입별로 색인을 만드는 것이다.  
+단일 twitter 인덱스에 tweet들과 user들을 저장하는 대신에, tweets 색인에 tweet 데이터들을 저장하고, user 색인에 user 정보를 저장한다.  
+색인들은 서로 완전히 독립적이고 색인들 사이에 필드 타입으로 인한 충돌은 없을 것이다.  
+    
+이 접근에는 두가지 이점이 있다.  
+* 데이터가 더 밀집될 가능성이 높아져, 루신에서 사용되는 압축기술에 이점이 있을 것이다.  
+* 모든 문서가 단일 엔터티를 표현하기 떄문에, 전문검색에서 검색은 더 정확해질 것이다.  
+   
+각 색인은 포함할 도큐먼트 수에 맞게 크기를 조정할 수 있다.   
+user의 경우 기본 샤드 수를 줄이고, tweet의 경우 기본 샤드 수를 더 많이 사용할 수 있다.  
+    
+
   
 - - -  
    
