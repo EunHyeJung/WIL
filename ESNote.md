@@ -730,6 +730,14 @@ var highlights = searchResponse.HitsMetadata.Hits.Select(h => h
    
 ### ETC    
   
-* 엘라스틱서치는 실제로 저장된 Document의 원문을 검색하는것이 아니라 `inverted index`에서 `term(token)`중에 쿼리에서 질의한 검색 키워드를 찾는다.  
-   
+* 엘라스틱서치는 실제로 저장된 Document의 원문을 검색하는것이 아니라 `inverted index`에서 `term(token)`중에 쿼리에서 질의한 검색 키워드를 찾는다.    
+* Query VS Filter  [출저](http://guruble.com/elasticsearch-query-vs-filter/)  
+  Query 스코어 값에 영향을 미치고, Filter는 스코어값에 영향을 미치지 않음.  
+  Query는 캐싱되지 않고, Filter는 캐싱되므로 Filter 가 성능면에서 유리  
+  RDBS를 이요할 때 사용했던 WHERE절 구문은 엘라스틱서치의 필터에 해당   
+  Filter는 RDBMS의 WHERE절과 전체결과에서 원하는 결과를 추려내는 작업이라는 점에서 개념이 유사하고, 성능면에서 유리함.  
+  엘라스틱서치에서 말하는 Query는 SQL Query의 개념과 차이점이 있음.  
+  검색이 조건을 만족하넌 레코드를 찾는 개념을 넘어서서 가장 적합하고 유사성(스코어)가 높은 결과를 찾으라는 개념이 포함됨.   
+  
+     
    
