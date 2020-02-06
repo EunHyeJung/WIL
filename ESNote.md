@@ -724,9 +724,38 @@ var highlights = searchResponse.HitsMetadata.Hits.Select(h => h
       .Highlight
 );
 ```   
-      
-       
-- --   
+  
+    
+- - -   
+    
+[참조 : ElasticSearch Reference(format)](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html)    
+     
+## format   
+   
+JSON 도큐먼트에서, 날짜데이터(date)는 문자열로 나타내진다.  
+엘라스틱서치는 사전에 구성된 포맷셋을 사용하고, 이러한 문자열들을 UTC에서 milliseconds-since-the-epoch을 나타내는 long 값으로 파싱한다.  
+   
+빌트인 포멧 외에, `yyyy/MM/dd`와 같이 친숙한 커스텀 포맷을 명시할 수 있따.   
+  
+```   
+PUT my_index
+{
+   "mappings" : {
+      "properties" : {
+         "date" : {
+            "type" : "date",
+            "format" : "yyyy-MM-dd"
+         }
+      }
+   }
+}
+```   
+   
+date 값을 지원하는 많은 API들은 `now-1m/d`와 같은 데이터 매칭 표현식을 지원한다.  
+    
+    
+        
+- - -    
    
 ### ETC    
   
