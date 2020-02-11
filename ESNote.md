@@ -763,9 +763,42 @@ cf) 엘라스틱서치에서 날짜 타입은 [ISO8601](https://ko.wikipedia.org
      
    위와 같은 ISO8601 형식이 아니라 "2020/02/07 16:32:30"와 같이 입력되면 text,keyword로 저장된다.  
    "2020/02/07 16:32:30" 같은 형식으로 날짜를 저장하려면 format옵셕을 사용해서 형태를 지정해야 한다.  
-
+   
     
-
+- - -   
+    
+[참조 : ElasticSearch Reference(Source filtering)](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html)    
+   
+### Source Filtering  
+   
+검색결과때 리턴받은 `_source` 필드를 컨트롤 할 수 있다.  
+만약 `stored_fields` 파라미터를 사용하지 않거나 `_source` 필드가 비활성화되어있다면, 디폴트로는 `_source` 필드의 내용 전부가 검색 결과로 반환된다.  
+`_source` 파라미터 값을 붙여서 `_source`값을 검색 대상에서 제외시킬 수 있으며, 또한 특정 필드를 검색결과에서 포함, 제외시키는 것도 가능하다.  
+   
+``` 
+GET /_search
+{
+   "_source" : false,
+   "query" : {
+      "termm" : { "user" : "kimchy" }
+   }
+}
+```       
+    
+```   
+GET /_search
+{
+   "_source" : {
+      "includes" : [ "ob1.*", "obj2.*" ],
+      "excludes" : [ "*.description" ]
+   },
+   "query" : {
+         "term" : { "user" : "kimchy" }
+   }
+}
+```   
+         
+     
 - - -    
    
 ### ETC    
