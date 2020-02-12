@@ -796,12 +796,97 @@ GET /_search
          "term" : { "user" : "kimchy" }
    }
 }
+```     
+   
+- - -   
+     
+      
+[참조 : ElasticSearch Reference(fielddata)](https://www.elastic.co/guide/en/elasticsearch/reference/current/fielddata.html)    
+      
+       
+## feilddata   
+  
+  
+대부분의 필드들은 디폴트로 색인되고, 검색가능하게 된다.  
+스크립트에서 정렬, 집계 그리고 필드값에 액세스하려면 검색과 다른 접근 패턴이 필요하다.  
+   
+검색은 "이 term을 포함하는 문서는 무엇인가?" 질문에 대한 답을 필요로 한다.  
+반면에 정렬과 집계는 약간 다르다. "이 문서에서 이 필드의 값을 무엇인가?"가 관심대상이므로 역인덱스 정보가 아닌 document를 key로 필드정보를 담은 데이터 구조가 필요하다. 이 데이터 구조가 바로 fielddata이다.  
+      
+대부분의 필드들은 데이터 액세스 패턴에 대해 색인 시간 디스크상의 doc_value를 사용할 수 있지만,  
+`text`필드는 doc_values를 지원하지 않는다.  
+   
+대신에, 텍스트 필드는 `feielddata`라고 불리는 쿼리시간(query-time) in-memory 데이터 구조를 사용한다.  
+이 데이터구조는 필드가 집계, 정렬 또는 스크립트에 처음 사용될 때 필요에 따라 구축된다.  
+이것은 term과 document 관계를 뒤집고(inverting), 결과를 JVM힙의 메모리에 저장하면서 디스크로부터 각각의 세그먼트에 대해 전체 역색인을 읽음으로써 구축된다.  
+     
+     
+### Fielddata is disabled on `text` fields by defualt  
+     
+필드 데이터는 많은 양의 힙 공간을 차지한다. 특히, 높은 cardinality 텍스트 필드를 로드할때 더더욱 그렇다.   
+일단 필드 데이터가 힙에 로드되면, 세그먼트 생애주기동안 유지된다.   
+또한, 필드 데이터를 로딩하는 것은 사용자가 지연을 유발할 수 있는 매우 비싼 프로세스이다.  
+이러한 이유떄문에 필드데이터는 디폴트로는 불가능하다.   
+  
+만약 정렬, 집계 또는 텍스트 필드에 대한 스크립트로부터 값에 접근하기 위한다면, 이 excpetion을 보게 될 것이다.   
 ```   
-         
+Fielddata is disabled on text fields by default.  Set `fielddata=true` on
+[`your_field_name`] in order to load  fielddata in memory by uninverting the
+inverted index. Note that this can however use significant memory.
+```    
+    
+### Before enabling fielddata   
+   
+fielddata를 설정하기 전에 왜 텍스트 필드를 집계, 정렬 등에 사용하는지를 고려해야 한다.   
+New York과 같은 단어가 new 또는 york을 검색할때 발견되게 하게 위해 텍스트 필드는 색인 전에 분석된다.  
+이 필드에 대한 term aggregation은 New York이라는 단일 버킷을 원할 때, new 버킷과 york 버킷을 반환할 것이다.  
+    
+대신에, 전문 검색에 대해서는 반드시 텍스트 필드를 가져야 한다.  
+그리고 그 텍스트 필드는 분석되지 않은 집계를 가능하게 하는 `doc_values`를 가지는 `keyword`필드를 가져야 한다.  
+     
+```   
+PUT my_index
+{
+   "mappings" : {
+      "properties" : {
+         "my_field" : {    // 1
+            "type" : "text",
+            "fields" : {
+               "keyword" : {     // 2
+                  "type" : "keyword"
+               }
+            }
+         }
+      }
+   }
+}
+```    
+   
+1. 검색에 사용되는 필드 : `my_field`   
+2. `my_field.keyword` 필드는 집계, 정렬 또는 스크립트에서 사용됨.   
+   
+    
+### Enablign fielddata on `text` fields  
+   
+기존의 `text`필드에 대해 PUT mapping API를 사용함으로써 필드데이터를 사용할 수 있다.  
+    
+```  
+PUT my_idnex/_mapping
+{
+   "properties" : {
+      "my_field" : {
+            "type" : "text",
+            "fielddata" : true
+      }
+   }
+}
+```  
+
+     
      
 - - -    
    
-### ETC    
+## ETC    
   
 * 엘라스틱서치는 실제로 저장된 Document의 원문을 검색하는것이 아니라 `inverted index`에서 `term(token)`중에 쿼리에서 질의한 검색 키워드를 찾는다.    
 * Query VS Filter  [출저](http://guruble.com/elasticsearch-query-vs-filter/)  
@@ -811,6 +896,8 @@ GET /_search
   Filter는 RDBMS의 WHERE절과 전체결과에서 원하는 결과를 추려내는 작업이라는 점에서 개념이 유사하고, 성능면에서 유리함.  
   엘라스틱서치에서 말하는 Query는 SQL Query의 개념과 차이점이 있음.  
   검색이 조건을 만족하넌 레코드를 찾는 개념을 넘어서서 가장 적합하고 유사성(스코어)가 높은 결과를 찾으라는 개념이 포함됨.   
-  
+* 엘라스틱서치에서 데이터를 매핑할떄 keyword type과 text type이 있는데,  
+  키워드 타입(keyword type)은 정확한 매칭(exact)에서 사용하고, 텍스트 타입(text type)의 경우 analyzed 매칭에 사용한다.  
+  텍스트 타입의 경우 형태소 분석을 통해 필드를 여러 term으로 나누어 역인덱싱의 과정을 거치게 되지만, 키워드 카입은 그 자체로 역인덱스 된다.  
      
    
